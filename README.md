@@ -150,6 +150,8 @@ generated](media/heimdall_up.png)
 > PS: if it asks for some manual input especially during
 > update-initramfs step, go ahead and hit enter till you see the console
 > again and the process continues
+> 
+> **Note: If you are deploying on a Instance with GPU, you need to manually reboot the instance post the first run.You can than again re-run the script to access the app**
 
 ![](media/heimdall_demo.gif)
 
