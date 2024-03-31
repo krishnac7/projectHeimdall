@@ -19,7 +19,7 @@ sudo apt install python3-pip -y
 echo -e "\n====== Installing Python packages ======\n"
 pip install flask requests
 
-screen -S llaminator -m -d  python3 main.py
+screen -S heimdall -m -d  python3 main.py
 echo -e "\n====== now running ======> \n"
 echo ' 
 project

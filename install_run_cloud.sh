@@ -30,7 +30,7 @@ sudo ufw reload
 echo -e "\n====== Setting up variables ====== \n"
 export PORT=80
 
-screen -S llaminator -m -d  python3 main.py
+screen -S heimdall -m -d  python3 main.py
 echo -e "\n====== now running ======> \n"
 echo ' 
 project
