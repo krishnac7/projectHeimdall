@@ -1,9 +1,11 @@
 **Deploying Multimodal LLM on IBM Cloud VSI (GPU)**
 
-Ah! What an exciting time we live in, magic of Foundational models is
-swaying the world and its getting easier and easier every day to get
-access to Gen AI models. Today we are going to look at a simple tutorial
-on how to run LLava on IBM Cloud VSI.
+Ah! What an exciting time we live in, magic of Foundational models is swaying the world and it’s getting easier and easier every day to get access to Gen AI models. Today we are going to look at a simple tutorial on how to run LLava on IBM Cloud VSI.
+
+LLava, Large Language and Vision Assistant is a Llama2 based Multi modal LLM which uses CLIP visual encoder with Vicuna resulting in outstanding performance in visual chat.
+
+It can be used for similar product search ( ecommerce ) , step by step guides on equipment repair ( manufacturing ), highly accurate OCR for Data capture and other industrial use cases.
+
 
 **Step1: Getting the environment ready.**
 
@@ -31,7 +33,7 @@ Provision a VSI from [here](https://cloud.ibm.com/vpc-ext/provision/vs):
     -   ibm-ubuntu-22-04-4-minimal-amd64-1, its available in page 4
         during the time of tutorial creation
 
--   For Profile go for a Balanced 4 vCPU and 16GB RAM
+-   For Profile go for a 16 vCPU | 80 GiB | 1 x NVIDIA L4 24 GB
 
 ![A screenshot of a computer Description automatically
 generated](media/gpu.png)
