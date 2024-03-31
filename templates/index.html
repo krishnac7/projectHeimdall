@@ -1,4 +1,159 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Project Heimdall</title><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:#e5e5ea;margin:0;padding:0;color:#000;overflow-x:hidden}.container{max-width:95%;margin:20px auto;padding:15px;background-color:#fff;border-radius:10px;box-sizing:border-box}#chatMessages,#imageContainer{max-height:300px;overflow-y:auto;position:relative;margin-top:3%}.chat-bubble{max-width:90%;margin:5px auto;padding:8px 12px;border-radius:6px;box-shadow:0 1px 1px rgba(0,0,0,.1)}.assistant-bubble,.user-bubble{text-align:left;display:block}.controlButtons{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}.user-bubble{background-color:#007aff;color:#fff;margin-left:auto;margin-right:20px;padding:12px 18px;text-align:left;display:block}.assistant-bubble{background-color:#f0f0f0;color:#000;margin-right:auto;margin-left:20px;padding:12px 18px;text-align:left;display:block}@media only screen and (max-width:600px){#chatMessages,#imageContainer,.container{max-width:90%;margin:10px auto;padding:10px}.btn,body,button,input{font-size:16px}.btn{padding:10px 24px;margin:5px}.input-group .form-control{font-size:16px}.chat-bubble{padding:12px 20px}#openCameraBtn{display:none}#fileInput+button{display:inline-block!important}.submitBtn{margin-top:0;text-align:center;height:38px;display:flex;justify-content:center;align-items:center}footer{margin-top:30vh}}footer{margin-top:60vh;text-align:center;font-size:.9em}</style></head><body><div class="container mt-5"><h2>Select or Capture Image</h2><p>Ask questions based on the image</p><div class="text-center mb-3"><input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)"> <button class="btn btn-secondary" onclick="document.getElementById(&#34;fileInput&#34;).click()">Upload Image</button><!-- Camera button --> <button class="btn btn-primary" id="openCameraBtn" onclick="openCamera()">Open Camera</button></div><div id="imageContainer" class="text-center" style="display:none"></div><div class="controlButtons"><button id="captureBtn" class="btn btn-primary mt-2" style="display:none" onclick="captureImage()">Capture</button> <button id="resetBtn" class="btn btn-danger mt-2" style="display:none" onclick="resetAll()">Reset</button></div><div id="chatMessages"></div><div id="response" class="alert alert-success mt-3" style="display:none"><div id="loading" class="spinner-border text-primary" role="status" style="display:none"><span class="sr-only">Loading...</span></div></div><div id="queryContainer" class="mt-3" style="display:none"><div class="input-group"><input type="text" id="queryInput" class="form-control" placeholder="Enter your query here"><div class="input-group-append"><button class="btn btn-primary submitBtn" onclick="submitImage()">Submit</button></div></div></div></div><script>let stream;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project heimdall</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #E5E5EA;
+            margin: 0;
+            padding: 0;
+            color: #000;
+            overflow-x: hidden; 
+        }
+        .container {
+            max-width: 95%; 
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-sizing: border-box; 
+        }
+        #chatMessages, #imageContainer {
+            max-height: 300px; 
+            overflow-y: auto; 
+            position: relative;
+            margin-top: 3%;
+        }
+        .chat-bubble {
+            max-width: 90%; 
+            margin: 5px auto; 
+            padding: 8px 12px; 
+            border-radius: 6px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        .user-bubble, .assistant-bubble {
+            text-align: left;
+            display: block; 
+        }
+        .controlButtons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        .user-bubble {
+            background-color: #007aff;
+            color: white;
+            margin-left: auto;
+            margin-right: 20px; 
+            padding: 12px 18px; 
+            
+            text-align: left;
+            display: block; 
+        }
+        .assistant-bubble {
+            background-color: #f0f0f0;
+            color: black;
+            margin-right: auto;
+            margin-left: 20px;
+            padding: 12px 18px; 
+            text-align: left;
+            display: block; 
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .container, #chatMessages, #imageContainer {
+                max-width: 90%; 
+                margin: 10px auto;
+                padding: 10px; 
+            }
+         
+            body, button, input, .btn {
+            font-size: 16px; 
+        }
+
+        .btn {
+            padding: 10px 24px; 
+            margin: 5px; 
+        }
+
+        .input-group .form-control {
+            font-size: 16px; 
+        }
+
+        .chat-bubble {
+            padding: 12px 20px; 
+        }
+        #openCameraBtn {
+        display: none;
+    }
+
+   
+    #fileInput + button {
+        display: inline-block !important; 
+    }
+    .submitBtn{
+        margin-top: 0%;
+        text-align: center;
+        height: 38px;
+        display: flex;
+            justify-content: center;
+            align-items: center;
+    }
+
+    footer{
+        margin-top: 30vh;
+    }
+
+        }
+        footer {
+            margin-top: 60vh;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
+    
+    
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Select or Capture Image</h2>
+    <p>Ask questions based on the image</p>
+    <div class="text-center mb-3">
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)"/>
+        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Image</button>
+        <!-- Camera button -->
+        <button class="btn btn-primary" id="openCameraBtn" onclick="openCamera()">Open Camera</button>
+    </div>
+    <div id="imageContainer" class="text-center" style="display: none;"></div>
+    <div class="controlButtons">
+    <button id="captureBtn" class="btn btn-primary mt-2" style="display: none;" onclick="captureImage()">Capture</button>
+    <button id="resetBtn" class="btn btn-danger mt-2" style="display: none;" onclick="resetAll()">Reset</button>
+    </div>
+    <div id="chatMessages"></div>
+    <div id="response" class="alert alert-success mt-3" style="display: none;">
+        <div id="loading" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <div id="queryContainer" class="mt-3" style="display:none;">
+        <div class="input-group">
+            <input type="text" id="queryInput" class="form-control" placeholder="Enter your query here">
+            <div class="input-group-append">
+                <button class="btn btn-primary submitBtn " onclick="submitImage()">Submit</button>
+            </div>
+        </div>
+    </div>
+   
+</div>
+
+<script>
+    let stream;
     let video;
     let capturedCanvas;
 
@@ -209,4 +364,29 @@
         chatBubble.textContent = message;
         chatMessages.appendChild(chatBubble);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    }</script><footer><p>New Achievement Unlocked: Run a MultiModal inference model on IBM Cloud &#x1F60E;</p><p><a href="mailto:krbalaga@in.ibm.com">Found bugs?</a></p></footer></body></html>
+    }
+    function insertMailToLink() {
+  
+    var p = document.createElement("p");
+  
+    var a = document.createElement("a");
+    a.href = "mailto:krbalaga@in.ibm.com"; 
+    a.textContent = "Found bugs?"; 
+ 
+    p.appendChild(a);
+
+    var footer = document.getElementById("pgfooter");
+
+    footer.appendChild(p);
+}
+document.addEventListener("DOMContentLoaded", function() {
+    insertMailToLink();
+});
+
+</script>
+<footer id="pgfooter">
+    <p>New Achievement Unlocked: Run a MultiModal inference model on IBM Cloud &#x1F60E; </p>
+    
+</footer>
+</body>
+</html>
