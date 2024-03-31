@@ -1,9 +1,9 @@
-**Deploying Multimodal LLM on IBM Cloud VPI (GPU)**
+**Deploying Multimodal LLM on IBM Cloud VSI (GPU)**
 
 Ah! What an exciting time we live in, magic of Foundational models is
 swaying the world and its getting easier and easier every day to get
 access to Gen AI models. Today we are going to look at a simple tutorial
-on how to run LLava on IBM Cloud VPI.
+on how to run LLava on IBM Cloud VSI.
 
 **Step1: Getting the environment ready.**
 
