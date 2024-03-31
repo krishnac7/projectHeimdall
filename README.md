@@ -137,6 +137,8 @@ you access to the model over a UI / API. Let's see how to get it.
 -   Run the setup files.
 
 > \`./install_run_cloud.sh\`
+> 
+> Note: If using techzone cluster, use the "install_run_techzone.sh" script instead
 
 ![A black background with white text Description automatically
 generated](media/heimdall_run.png)
@@ -151,7 +153,7 @@ generated](media/heimdall_up.png)
 > update-initramfs step, go ahead and hit enter till you see the console
 > again and the process continues
 > 
-> **Note: If you are deploying on a Instance with GPU, you need to manually reboot the instance post the first run.You can than again re-run the script to access the app**
+> **Note: If you are deploying on a Instance with GPU, you need to manually reboot the instance post the first run.The app auto runs after reboot **
 
 ![](media/heimdall_demo.gif)
 
