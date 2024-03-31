@@ -15,9 +15,9 @@ ollama pull llava
 echo -e "\n====== Installing python3-pip ======\n"
 sudo apt install python3-pip -y
 
-# Install Flask and Ollama Python packages
-echo -e "\n====== Installing Flask and Ollama Python packages ======\n"
-pip install flask 
+# Install Flask  Python packages
+echo -e "\n====== Installing Python packages ======\n"
+pip install flask requests
 
 screen -S llaminator -m -d  python3 main.py
 echo -e "\n====== now running ======> \n"

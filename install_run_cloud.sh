@@ -17,7 +17,7 @@ sudo apt install python3-pip -y
 
 # Install Flask Python packages
 echo -e "\n====== Installing Python packages ======\n"
-pip install flask 
+pip install flask requests
 
 #configure network
 echo -e "\n====== configuring firewall ====== \n"
