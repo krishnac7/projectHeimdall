@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project heimdall</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #E5E5EA;
+            margin: 0;
+            padding: 0;
+            color: #000;
+            overflow-x: hidden; 
+        }
+        .container {
+            max-width: 95%; 
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-sizing: border-box; 
+        }
+        #chatMessages, #imageContainer {
+            max-height: 300px; 
+            overflow-y: auto; 
+            position: relative;
+            margin-top: 3%;
+        }
+        .chat-bubble {
+            max-width: 90%; 
+            margin: 5px auto; 
+            padding: 8px 12px; 
+            border-radius: 6px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        .user-bubble, .assistant-bubble {
+            text-align: left;
+            display: block; 
+        }
+        .controlButtons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+        .user-bubble {
+            background-color: #007aff;
+            color: white;
+            margin-left: auto;
+            margin-right: 20px; 
+            padding: 12px 18px; 
+            
+            text-align: left;
+            display: block; 
+        }
+        .assistant-bubble {
+            background-color: #f0f0f0;
+            color: black;
+            margin-right: auto;
+            margin-left: 20px;
+            padding: 12px 18px; 
+            text-align: left;
+            display: block; 
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .container, #chatMessages, #imageContainer {
+                max-width: 90%; 
+                margin: 10px auto;
+                padding: 10px; 
+            }
+         
+            body, button, input, .btn {
+            font-size: 16px; 
+        }
+
+        .btn {
+            padding: 10px 24px; 
+            margin: 5px; 
+        }
+
+        .input-group .form-control {
+            font-size: 16px; 
+        }
+
+        .chat-bubble {
+            padding: 12px 20px; 
+        }
+        #openCameraBtn {
+        display: none;
+    }
+
+   
+    #fileInput + button {
+        display: inline-block !important; 
+    }
+    .submitBtn{
+        margin-top: 0%;
+        text-align: center;
+        height: 38px;
+        display: flex;
+            justify-content: center;
+            align-items: center;
+    }
+
+    footer{
+        margin-top: 30vh;
+    }
+
+        }
+        footer {
+            margin-top: 60vh;
+            text-align: center;
+            font-size: 0.9em;
+        }
+    </style>
+    
+    
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Select or Capture Image</h2>
+    <p>Ask questions based on the image</p>
+    <div class="text-center mb-3">
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)"/>
+        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Image</button>
+        <!-- Camera button -->
+        <button class="btn btn-primary" id="openCameraBtn" onclick="openCamera()">Open Camera</button>
+    </div>
+    <div id="imageContainer" class="text-center" style="display: none;"></div>
+    <div class="controlButtons">
+    <button id="captureBtn" class="btn btn-primary mt-2" style="display: none;" onclick="captureImage()">Capture</button>
+    <button id="resetBtn" class="btn btn-danger mt-2" style="display: none;" onclick="resetAll()">Reset</button>
+    </div>
+    <div id="chatMessages"></div>
+    <div id="response" class="alert alert-success mt-3" style="display: none;">
+        <div id="loading" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <div id="queryContainer" class="mt-3" style="display:none;">
+        <div class="input-group">
+            <input type="text" id="queryInput" class="form-control" placeholder="Enter your query here">
+            <div class="input-group-append">
+                <button class="btn btn-primary submitBtn " onclick="submitImage()">Submit</button>
+            </div>
+        </div>
+    </div>
+   
+</div>
+
+<script>
+    let stream;
+    let video;
+    let capturedCanvas;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const queryInput = document.getElementById('queryInput');
+        queryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitImage();
+            }
+        });
+    });
+
+    function openCamera() {
+        const videoContainer = document.getElementById('imageContainer');
+        videoContainer.style.display = 'block';
+        
+        video = document.createElement('video');
+        video.setAttribute('id', 'videoPreview');
+        video.classList.add('img-fluid');
+        video.autoplay = true;
+        video.style.maxWidth = '100%';
+        videoContainer.appendChild(video);
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (cameraStream) {
+                stream = cameraStream;
+                video.srcObject = stream;
+                document.getElementById('captureBtn').style.display = 'inline-block';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                document.getElementById('queryContainer').style.display = 'block';
+            })
+            .catch(function (error) {
+                console.error('Error accessing the camera:', error);
+                alert('Error accessing the camera. Please check your camera permissions and try again.');
+            });
+    }
+
+    function captureImage() {
+    // Assume video is globally accessible
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+   
+    const scaleWidth = window.innerWidth * 0.9 / videoWidth;
+    const scaleHeight = window.innerHeight * 0.9 / videoHeight; 
+    const scale = Math.min(scaleWidth, scaleHeight); 
+
+    // Set canvas dimensions based on scale
+    canvas.width = videoWidth * scale;
+    canvas.height = videoHeight * scale;
+
+    // Draw the video frame to the canvas, scaled
+    context.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+
+    // Replace the video with the canvas in the UI
+    const imageContainer = document.getElementById('imageContainer');
+    imageContainer.innerHTML = ''; // Clear the container
+    imageContainer.appendChild(canvas); // Add the canvas
+
+    // Stop the video stream
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    video.remove(); 
+
+    // UI adjustments
+    document.getElementById('captureBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+    document.getElementById('queryContainer').style.display = 'block';
+    document.getElementById('queryInput').focus();
+}
+
+    function resetAll() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        if (video) {
+            video.remove();
+            video = null;
+        }
+        
+        // Reset the file input
+        const fileInput = document.getElementById('fileInput');
+        fileInput.value = "";
+
+        const imageContainer = document.getElementById('imageContainer');
+        imageContainer.innerHTML = '';
+        imageContainer.style.display = 'none';
+
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+
+        capturedCanvas = null;
+
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('resetBtn').style.display = 'none';
+        document.getElementById('openCameraBtn').style.display = 'inline-block';
+        document.getElementById('queryContainer').style.display = 'none';
+        document.getElementById('response').style.display = 'none';
+        document.getElementById('loading').style.display = 'none';
+    }
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(fileEvent) {
+            const image = new Image();
+
+            image.onload = function() {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                context.drawImage(image, 0, 0);
+                document.getElementById('imageContainer').appendChild(canvas);
+                capturedCanvas = canvas;
+                document.getElementById('imageContainer').style.display = 'block';
+                document.getElementById('captureBtn').style.display = 'none';
+                document.getElementById('resetBtn').style.display = 'inline-block';
+                document.getElementById('queryContainer').style.display = 'block';
+                document.getElementById('queryInput').focus();
+                // document.getElementById('openCameraBtn').style.display = 'none';
+            };
+
+            image.src = fileEvent.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    }
+    function submitImage() {
+    const query = document.getElementById('queryInput').value;
+    if (!capturedCanvas) {
+        console.error('Canvas is not found.');
+        return;
+    }
+
+    capturedCanvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append('image', blob, 'image.jpg');
+        formData.append('query', query);
+
+
+        // const loadingIndicator = document.getElementById('loading');
+        // loadingIndicator.style.display = 'block'; // Show loading indicator before fetch request
+        const responseContainerLoad = document.getElementById('response');
+        responseContainerLoad.style.display = 'block';
+        responseContainerLoad.textContent = 'Loading....';
+        document.getElementById('queryInput').value = '';
+        // const responseContainerLoad = document.getElementById('response');
+        //     responseContainerLoad.style.display = 'none';
+        //     responseContainerLoad.textContent = '';
+
+        fetch('/process-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let partialResponse = '';
+            const readStream = () => {
+                reader.read().then(({ done, value }) => {
+                    if (done) {
+                        appendMessage(partialResponse, 'assistant'); // Append full response
+                        responseContainerLoad.textContent = '';
+                        responseContainerLoad.style.display = 'none';
+                        return;
+                    }
+                    
+                    responseContainerLoad.textContent = '';
+                    partialResponse += decoder.decode(value, { stream: true });
+                    // Display streaming data in real-time
+                    // responseContainerLoad.style.display = 'block';
+                    // responseContainerLoad.textContent += partialResponse;
+                    document.getElementById('response').textContent = partialResponse;
+                    readStream();
+                }).catch(error => {
+                    console.error('Streaming error:', error);
+                    loadingIndicator.style.display = 'none'; // Hide loading indicator on error
+                });
+            };
+
+            readStream();
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            loadingIndicator.style.display = 'none';
+        });
+
+        appendMessage(query, 'user');
+    }, 'image/jpeg');
+}
+
+   
+    function appendMessage(message, sender) {
+        const chatMessages = document.getElementById('chatMessages');
+        const chatBubble = document.createElement('div');
+        chatBubble.classList.add('chat-bubble'); 
+        chatBubble.classList.add(sender === 'user' ? 'user-bubble' : 'assistant-bubble');
+        chatBubble.textContent = message;
+        chatMessages.appendChild(chatBubble);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+</script>
+<footer>
+    <p>New Achievement Unlocked: Run a MultiModal inference model on IBM Cloud &#x1F60E; </p>
+    <p><a href="mailto:krbalaga@in.ibm.com">Found bugs?</a></p>
+</footer>
+</body>
+</html>
